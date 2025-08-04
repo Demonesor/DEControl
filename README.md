@@ -1,3 +1,6 @@
+# DONT WORK APP!!
+
+
 # DEControl 🔻
 
 A test prototype to shut down your PC remotely from Android.  
