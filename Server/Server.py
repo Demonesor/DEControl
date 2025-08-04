@@ -1,15 +1,34 @@
 import os
 import random
 import string
+import socket
 from flask import Flask, request, jsonify, abort
 
 app = Flask(__name__)
 
+
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ips = ""
+    try:
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        ips = ip.split(".")[2]
+        ips = ips +  ip.split(".")[3]
+        
+    except Exception:
+        ip = "127.0.0.1"
+        ips = ip.split(".")[2] + ip.split(".")[3]
+    finally:
+        s.close()
+    return ips
+
+
 def generate_token():
     parts = [
-        ''.join(random.choices(string.ascii_uppercase + string.digits, k=4)),
-        ''.join(random.choices(string.ascii_uppercase + string.digits, k=2)),
         ''.join(random.choices(string.ascii_uppercase + string.digits, k=3)),
+        ''.join(random.choices(string.ascii_uppercase + string.digits, k=2)),
+        ''.join(get_local_ip()),
     ]
     return ':'.join(parts)
 
@@ -18,13 +37,13 @@ def save_token(token):
         f.write(token)
 
 def load_token():
-    if not os.path.exists('token.sec'):
-        token = generate_token()
-        save_token(token)
-        print(f"Generated token: {token}")
-    else:
-        with open('token.sec') as f:
-            token = f.read().strip()
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    os.path.exists('token.sec')
+    token = generate_token()
+    save_token(token)
+    print(f"Generated token: {token}")
+    
+    
     return token
 
 class APIController:
@@ -76,4 +95,4 @@ def status_route():
 
 if __name__ == '__main__':
     print(f"Using token: {token}")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=7462)
